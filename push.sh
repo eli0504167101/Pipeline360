@@ -1,5 +1,4 @@
+#!/bin/bash
 git add .
-
-git commit -m "Updated CI/CD pipeline "
-
-git push origin main
+git commit -m "Update CI/CD pipeline"
+git push origin $(git branch --show-current)
