@@ -1,0 +1,2 @@
+# Secret files - Do not commit!
+infra/kubernetes/secrets/db-secrets.yaml
