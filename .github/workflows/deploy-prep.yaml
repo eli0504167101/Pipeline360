@@ -23,17 +23,14 @@ jobs:
 
       - name: Update Image Tags
         run: |
-          # עדכון ה-Backend
-          sed -i "s|image: hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.sha }}|g" infra-repo/kubernetes/backend-deployment.yaml
-          
-          # עדכון ה-Frontend
-          sed -i "s|image: hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.sha }}|g" infra-repo/kubernetes/frontend-deployment.yaml
-
+          # שימוש במספר רץ במקום SHA
+          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/backend-deployment.yaml
+          sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/frontend-deployment.yaml
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          branch: auto-update-${{ github.sha }}
+          branch: auto-update-${{ github.run_number }}
           base: main
-          title: "Update deployment images to ${{ github.sha }}"
+          title: "Update deployment images to ${{ github.run_number }}"
           body: "Automated PR: Updating backend and frontend image versions after successful CI build."
-          commit-message: "Update image tags to ${{ github.sha }}"
+          commit-message: "Update image tags to ${{ github.run_number }}"

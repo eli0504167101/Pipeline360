@@ -26,7 +26,5 @@ jobs:
           context: ./backend-repo
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
