@@ -28,6 +28,7 @@ Follow these steps to deploy the system to your local cluster:
 1. **Create the dedicated namespace:**
    ```bash
    kubectl create namespace hotel-system
+   
 **Deploy the system components:**
     ```bash
    kubectl apply -f k8s/ -n hotel-system
