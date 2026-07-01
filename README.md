@@ -2,7 +2,7 @@
 Pipeline360 - Hotel Management System
 A cloud-native, scalable hotel management platform orchestrated with Kubernetes, designed with a focus on high availability, persistence, and production-grade reliability.
 
-#🏗️ System Architecture
+🏗️ #System Architecture
 The platform is deployed within a dedicated hotel-system namespace, ensuring resource isolation and management efficiency. It consists of the following components:
 
 Frontend: A high-performance web interface deployed with 5 replicas to ensure seamless user accessibility.
