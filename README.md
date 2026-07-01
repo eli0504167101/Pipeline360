@@ -24,8 +24,20 @@ The platform is deployed within a dedicated `hotel-system` namespace, ensuring r
 
 ## 📋 Deployment Instructions
 Follow these steps to deploy the system to your local cluster:
-## Deploy the system components:
 
 1. **Create the dedicated namespace:**
    ```bash
    kubectl create namespace hotel-system
+## Deploy the system components:
+    ```bash
+   kubectl apply -f k8s/ -n hotel-system
+## Verify the deployment status:
+    ```bash
+   kubectl get all -n hotel-system
+
+# 🔐 Security & Operations
+* **Hardening:** Containers are built with minimal images to reduce the attack surface.
+
+* **Secret Management:** Sensitive credentials are injected at runtime via Kubernetes Secrets, ensuring they are never exposed in the source code or build artifacts.
+
+   
