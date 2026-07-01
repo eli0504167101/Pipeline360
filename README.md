@@ -30,11 +30,11 @@ Follow these steps to deploy the system to your local cluster:
    kubectl create namespace hotel-system
    
   **Deploy the system components:**
-    ```bash
+   ```bash
    kubectl apply -f k8s/ -n hotel-system
    
- **Verify the deployment status:**
-    ```bash
+  **Verify the deployment status:**
+   ```bash
    kubectl get all -n hotel-system
 
 # 🔐 Security & Operations
