@@ -21,11 +21,28 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+        with:
+          path: main-repo
+
+      - name: Checkout infra-repo
+        uses: actions/checkout@v4
+        with:
+          repository: your-username/infra-repo  # שנה לשם ה-Repo האמיתי שלך
+          path: infra-repo                     # זה יצור את התיקייה שאתה מחפש
+          token: ${{ secrets.PAT_TOKEN }}      # דורש Personal Access Token
+
+      - name: Debug - List directory structure
+        run: |
+          echo "Current directory: $(pwd)"
+          find . -maxdepth 4 -not -path '*/.*'
+
       - name: Update Image Tags
         run: |
           # שימוש במספר רץ במקום SHA
-          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/backend-deployment.yaml
-          sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/frontend-deployment.yaml
+          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/backend-deployment.yaml
+          sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/frontend-deployment.yaml
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
