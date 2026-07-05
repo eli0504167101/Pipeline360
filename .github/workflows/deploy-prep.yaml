@@ -21,6 +21,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug - List directory structure
+        run: |
+          echo "Current directory: $(pwd)"
+          find . -maxdepth 4 -not -path '*/.*'
+
       - name: Update Image Tags
         run: |
           # שימוש במספר רץ במקום SHA
