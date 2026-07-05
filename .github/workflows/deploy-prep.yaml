@@ -10,7 +10,7 @@ jobs:
   update-manifests:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    # הוספת ההרשאות הנדרשות לביצוע פעולות Git
+    
     permissions:
       contents: write
       pull-requests: write
