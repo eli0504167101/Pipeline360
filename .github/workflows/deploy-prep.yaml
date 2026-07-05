@@ -41,8 +41,8 @@ jobs:
       - name: Update Image Tags
         run: |
           # שימוש במספר רץ במקום SHA
-          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/backend-deployment.yaml
-          sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/frontend-deployment.yaml
+          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/backend-deployment.yaml
+sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/frontend-deployment.yaml
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
