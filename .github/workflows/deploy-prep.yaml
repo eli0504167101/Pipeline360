@@ -27,13 +27,12 @@ jobs:
           path: main-repo
 
       - name: Checkout infra-repo
-        env:
-          PAT: ${{ secrets.PAT_TOKEN }}
         run: |
-          # מחיקת תיקייה קיימת אם יש
+          # מחיקת התיקייה כדי להתחיל נקי
           rm -rf infra-repo
-          # שימוש בטוקן בתוך ה-URL לביצוע ה-Clone
-          git clone https://x-access-token:$PAT@github.com/eli0504167101/infra-repo.git infra-repo
+          # כניסה ל-Clone ישיר עם ה-Token
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/eli0504167101/infra-repo.git infra-repo
+          
       - name: Debug - List directory structure
         run: |
           echo "Current directory: $(pwd)"
