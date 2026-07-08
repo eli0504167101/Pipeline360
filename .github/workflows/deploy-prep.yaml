@@ -28,7 +28,7 @@ jobs:
 
       - name: Checkout infra-repo
         uses: actions/checkout@v4
-        timeout-minutes: 2  # הוסף את זה לכל שלב  כתקוע
+        timeout-minutes: 2  # ה את זה לכל שלב שחושד כתקוע
         with:
           repository: 0504167101/infra-repo
           path: infra-repo
