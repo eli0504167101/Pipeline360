@@ -20,6 +20,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # הוסף את ה-Frontend ל-CI שלך
+      - name: Build and push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend-repo # וודא שהנתיב נכון
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:latest
+
       - name: Build and push Backend Image
         uses: docker/build-push-action@v5
         with:
