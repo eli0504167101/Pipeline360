@@ -28,10 +28,11 @@ jobs:
 
       - name: Checkout infra-repo
         uses: actions/checkout@v4
+        timeout-minutes: 2  # הוסף את זה לכל שלב שחושד כתקוע
         with:
-          repository: eli0504167101/infra-repo # כתוב כאן רק שם משתמש / שם רפו
+          repository: eli0504167101/infra-repo
           path: infra-repo
-          token: ${{ secrets.PAT_TOKEN }} 
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Debug - List directory structure
         run: |
