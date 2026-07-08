@@ -40,14 +40,19 @@ jobs:
 
       - name: Update Image Tags
         run: |
-          # שימוש במספר רץ במקום SHA
-          sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/backend-deployment.yaml
-          sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" infra-repo/kubernetes/deployments/frontend-deployment.yaml
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          branch: auto-update-${{ github.run_number }}
-          base: main
-          title: "Update deployment images to ${{ github.run_number }}"
-          body: "Automated PR: Updating backend and frontend image versions after successful CI build."
-          commit-message: "Update image tags to ${{ github.run_number }}"
+          # הגדרת נתיבים
+          BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
+          FRONTEND_YAML="infra-repo/kubernetes/deployments/frontend-deployment.yaml"
+
+          # בדיקת קיום הקבצים
+          if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
+              echo "Updating image tags to ${{ github.run_number }}..."
+              
+              # עדכון Backend
+              sed -i "s|image: .*hotel-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
+              
+              # עדכון Frontend
+              sed -i "s|image: .*hotel-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
+          else
+              echo "Error: One or more deployment files not found!" && exit 1
+          fi
