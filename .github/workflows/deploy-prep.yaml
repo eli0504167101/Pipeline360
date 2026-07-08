@@ -34,6 +34,11 @@ jobs:
           echo "Current directory: $(pwd)"
           find . -maxdepth 4 -not -path '*/.*'
 
+      - name: List files to debug
+        run: |
+          echo "Listing files in infra-repo:"
+          find infra-repo -maxdepth 3
+
       - name: Update Image Tags
         run: |
           # הגדרת נתיבים
