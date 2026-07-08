@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         timeout-minutes: 2  # הוסף את זה לכל שלב  כתקוע
         with:
-          repository: eli0504167101/infra-repo
+          repository: 0504167101/infra-repo
           path: infra-repo
           token: ${{ secrets.PAT_TOKEN }}
 
