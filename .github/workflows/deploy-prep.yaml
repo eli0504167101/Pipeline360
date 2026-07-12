@@ -1,54 +1,24 @@
 name: Deployment Preparation
 
+# הפעולה תתעורר אוטומטית בכל פעם שיש Push לבראנץ' dev
 on:
-  workflow_run:
-    workflows: ["CI Pipeline"]
-    types:
-      - completed
+  push:
+    branches:
+      - dev
 
 jobs:
   update-manifests:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     
     permissions:
       contents: write
-      pull-requests: write
     
     steps:
-      # 1. משיכת הקוד של הציפוזיטורי הנוכחי (Pipeline360) מבראנץ' dev באופן מפורש
-      - name: Checkout current repo (dev branch)
+      # 1. משיכת הקוד של הציפוזיטורי (כולל תיקיית infra-repo)
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: 'dev'
-          path: 'main-repo'
 
-      # 2. בדיקה האם הטוקן מוגדר בריפוזיטורי הנוכחי
-      - name: Debug Token Presence
-        run: |
-          if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
-            echo "ERROR: PAT_TOKEN is empty or not found in Secrets!"
-            exit 1
-          else
-            echo "PAT_TOKEN is present."
-          fi
-
-      # 3. משיכת הריפוזיטורי של ה-Infra באמצעות הטוקן
-      # מחק או שים בהערה את ה-Checkout הישן של ה-infra-repo, ותחליף אותו בזה:
-      - name: Checkout infra-repo via Script
-        run: |
-          # מחיקת התיקייה אם היא קיימת מריצות קודמות כדי למנוע קונפליקט
-          rm -rf infra-repo
-          
-          # ביצוע Clone ישיר באמצעות ה-Token של ה-Classic
-          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/eli0504167101/infra-repo.git infra-repo
-      # 4. דיבאג מבנה תיקיות
-      - name: Debug - List directory structure
-        run: |
-          echo "Current directory: $(pwd)"
-          find . -maxdepth 4 -not -path '*/.*'
-
-      # 5. עדכון תגיות ה-Image בקבצי ה-YAML
+      # 2. עדכון תגיות ה-Image ישירות בתיקייה המקומית
       - name: Update Image Tags
         run: |
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
@@ -63,5 +33,25 @@ jobs:
               # Frontend
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
           else
-              echo "Error: One or more deployment files not found!" && exit 1
+              echo "Error: One or more deployment files not found!"
+              echo "Showing current directory layout:"
+              ls -la
+              find . -name "backend-deployment.yaml"
+              exit 1
+          fi
+
+      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה ל-dev בלי אישור ידני
+      - name: Commit & Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add infra-repo/kubernetes/deployments/*.yaml
+          
+          # בדיקה האם בכלל השתנה משהו כדי למנוע שגיאה במידה ואין שינויים
+          if git diff --staged --quiet; then
+            echo "No changes detected in manifests."
+          else
+            git commit -m "Automated image tag update to ${{ github.run_number }} [skip ci]"
+            git push origin dev
           fi
