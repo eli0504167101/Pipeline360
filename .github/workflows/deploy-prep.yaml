@@ -29,9 +29,9 @@ jobs:
       - name: Checkout infra-repo
         uses: actions/checkout@v4
         with:
-           repository: 'eli0504167101/infra-repo'
-           path: 'infra-repo'
-           token: ${{ secrets.PAT_TOKEN }}
+          repository: 'eli0504167101/infra-repo'
+          path: 'infra-repo'
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Debug - List directory structure
         run: |
