@@ -39,21 +39,4 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:latest3
 
-     
-      - name: Clean old Docker Hub tags backend
-        uses: vitorsgomes/docker-hub-garbage-collector@v1.1.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: "${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend"
-          # הגדרה: כמה אימג'ים אחרונים להשאיר פעילים (למשל 5 האחרונים)
-          keep_last: 5
       
-      - name: Clean old Docker Hub tags frontend
-        uses: vitorsgomes/docker-hub-garbage-collector@v1.1.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: "${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend"
-          # הגדרה: כמה אימג'ים אחרונים להשאיר פעילים (למשל 5 האחרונים)
-          keep_last: 5
