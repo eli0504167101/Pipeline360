@@ -34,13 +34,14 @@ jobs:
           fi
 
       # 3. משיכת הריפוזיטורי של ה-Infra באמצעות הטוקן
-      - name: Checkout infra-repo
-        uses: actions/checkout@v4
-        with:
-          repository: 'eli0504167101/infra-repo'
-          path: 'infra-repo'
-          token: ${{ secrets.PAT_TOKEN }}
-
+      # מחק או שים בהערה את ה-Checkout הישן של ה-infra-repo, ותחליף אותו בזה:
+      - name: Checkout infra-repo via Script
+        run: |
+          # מחיקת התיקייה אם היא קיימת מריצות קודמות כדי למנוע קונפליקט
+          rm -rf infra-repo
+          
+          # ביצוע Clone ישיר באמצעות ה-Token של ה-Classic
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/eli0504167101/infra-repo.git infra-repo
       # 4. דיבאג מבנה תיקיות
       - name: Debug - List directory structure
         run: |
