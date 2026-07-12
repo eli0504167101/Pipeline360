@@ -1,6 +1,5 @@
 name: Deployment Preparation
 
-# במקום push ישיר, הוא ימתין לסיום ה-CI המלא של ה-dev
 on:
   workflow_run:
     workflows: ["CI Pipeline"]
@@ -9,7 +8,6 @@ on:
 
 jobs:
   update-manifests:
-    # תנאי קריטי: רץ רק אם ה-CI Pipeline הסתיים ב-Success מלא
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     
@@ -17,11 +15,9 @@ jobs:
       contents: write
     
     steps:
-      # 1. משיכת הציפוזיטורי (שמכיל ב כבר את תיקיית infra-repo)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. עדכון תגיות ה-Image ישירות בנתיב המקומי הקיים בתיקייה
       - name: Update Image Tags
         run: |
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
@@ -29,16 +25,24 @@ jobs:
 
           if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
               echo "Updating image tags to ${{ github.run_number }}..."
-              
-              # עדכון Backend
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
-
-              # עדכון Frontend
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
           else
               echo "Error: One or more deployment files not found!"
               exit 1
           fi
 
-      # 3. דחיפה אוטומטית (Push) לבראנץ' ייעודי מרוחק כדי למנוע קונפליקטים מקומיים
-      
+      - name: Commit & Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add infra-repo/kubernetes/deployments/*.yaml
+          
+          if git diff --staged --quiet; then
+            echo "No changes detected in manifests."
+          else
+            git commit -m "Automated image tag update to ${{ github.run_number }}"
+            # שימוש ב-HEAD פותר את הבעיה ב-100% כי הוא דוחף את הבראנץ' הנוכחי (main) אל deploy-dev
+            git push origin HEAD:deploy-dev --force
+          fi
