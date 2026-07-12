@@ -1,5 +1,6 @@
 name: Deployment Preparation
 
+# השינוי הקריטי: מקשיב ישירות לכל פוש בבראנץ' dev
 on:
   push:
     branches:
@@ -13,11 +14,11 @@ jobs:
       contents: write
     
     steps:
-        # 1. משיכת הציפוזיטורי הנוכחי (שמכיל בתוכו כבר את תיקיית infra-repo)
+      # 1. משיכת הציפוזיטורי (שמכיל בתוכו כבר את תיקיית infra-repo)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. עדכון תגיות ה-Image ישירות בנתיב המקומי הקיים
+      # 2. עדכון תגיות ה-Image ישירות בנתיב המקומי הקיים בתיקייה
       - name: Update Image Tags
         run: |
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
@@ -26,20 +27,19 @@ jobs:
           if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
               echo "Updating image tags to ${{ github.run_number }}..."
               
-              # Backend
+              # עדכון Backend
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
 
-              # Frontend
+              # עדכון Frontend
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
           else
               echo "Error: One or more deployment files not found!"
-              echo "Showing current directory layout:"
-              ls -la
-              find . -name "backend-deployment.yaml"
+              echo "Showing structure:"
+              ls -la infra-repo/kubernetes/deployments/
               exit 1
           fi
 
-      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה ל-dev בלי צורך באישור ידני
+      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה לשרת לבראנץ' ייעודי כדי למנוע קונפליקטים במחשב
       - name: Commit & Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -47,10 +47,10 @@ jobs:
           
           git add infra-repo/kubernetes/deployments/*.yaml
           
-          # בדיקה האם בוצע שינוי בפועל כדי למנוע שגיאה במידה ואין עדכון
           if git diff --staged --quiet; then
             echo "No changes detected in manifests."
           else
-            git commit -m "Automated image tag update to ${{ github.run_number }} [skip ci]"
-            git push origin dev
+            git commit -m "Automated image tag update to ${{ github.run_number }}"
+            # דוחף את השינוי לבראנץ' מרוחק נפרד בשם deploy-dev וכך ה-dev שלך במחשב נשאר נקי לחלוטין!
+            git push origin dev:deploy-dev --force
           fi
