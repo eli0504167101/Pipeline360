@@ -1,13 +1,16 @@
 name: Deployment Preparation
 
-# השינוי הקריטי: מקשיב ישירות לכל פוש בבראנץ' dev
+# במקום push ישיר, הוא ימתין לסיום ה-CI המלא של ה-dev
 on:
-  push:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
 
 jobs:
   update-manifests:
+    # תנאי קריטי: רץ רק אם ה-CI Pipeline הסתיים ב-Success מלא
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     
     permissions:
@@ -34,12 +37,10 @@ jobs:
               sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
           else
               echo "Error: One or more deployment files not found!"
-              echo "Showing structure:"
-              ls -la infra-repo/kubernetes/deployments/
               exit 1
           fi
 
-      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה לשרת לבראנץ' ייעודי כדי למנוע קונפליקטים במחשב
+      # 3. דחיפה אוטומטית (Push) לבראנץ' ייעודי מרוחק כדי למנוע קונפליקטים מקומיים
       - name: Commit & Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -51,6 +52,5 @@ jobs:
             echo "No changes detected in manifests."
           else
             git commit -m "Automated image tag update to ${{ github.run_number }}"
-            # דוחף את השינוי לבראנץ' מרוחק נפרד בשם deploy-dev וכך ה-dev שלך במחשב נשאר נקי לחלוטין!
             git push origin dev:deploy-dev --force
           fi
