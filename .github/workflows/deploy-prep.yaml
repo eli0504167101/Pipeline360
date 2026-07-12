@@ -27,11 +27,11 @@ jobs:
           path: main-repo
 
       - name: Checkout infra-repo
-        env:
-          MY_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          rm -rf infra-repo
-          git clone https://x-access-token:$MY_TOKEN@github.com/eli0504167101/infra-repo.git
+        uses: actions/checkout@v4
+        with:
+           repository: 'eli0504167101/infra-repo'
+           path: 'infra-repo'
+           token: ${{ secrets.PAT_TOKEN }}
 
       - name: Debug - List directory structure
         run: |
