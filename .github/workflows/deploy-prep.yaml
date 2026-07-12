@@ -52,5 +52,5 @@ jobs:
             echo "No changes detected in manifests."
           else
             git commit -m "Automated image tag update to ${{ github.run_number }}"
-            git push origin dev:deploy-dev --force
+            git push origin HEAD:deploy-dev --force
           fi
