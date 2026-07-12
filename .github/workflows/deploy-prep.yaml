@@ -17,7 +17,7 @@ jobs:
       contents: write
     
     steps:
-      # 1. משיכת הציפוזיטורי (שמכיל בתוכו כבר את תיקיית infra-repo)
+      # 1. משיכת הציפוזיטורי (שמכיל ב כבר את תיקיית infra-repo)
       - name: Checkout repository
         uses: actions/checkout@v4
 
