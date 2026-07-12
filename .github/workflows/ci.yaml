@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # הוסף את ה-Frontend ל-CI שלך
+      
       - name: Build and push Frontend Image
         uses: docker/build-push-action@v5
         with:
