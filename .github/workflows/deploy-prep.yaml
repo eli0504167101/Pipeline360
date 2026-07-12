@@ -53,11 +53,11 @@ jobs:
           if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
               echo "Updating image tags to ${{ github.run_number }}..."
               
-              # עדכון Backend
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
-              
-              # עדכון Frontend
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
+              # Backend
+sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
+
+# Frontend
+sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
           else
               echo "Error: One or more deployment files not found!" && exit 1
           fi
