@@ -1,6 +1,5 @@
 name: Deployment Preparation
 
-# הפעולה תתעורר אוטומטית בכל פעם שיש Push לבראנץ' dev
 on:
   push:
     branches:
@@ -14,11 +13,11 @@ jobs:
       contents: write
     
     steps:
-      # 1. משיכת הקוד של הציפוזיטורי (כולל תיקיית infra-repo)
+        # 1. משיכת הציפוזיטורי הנוכחי (שמכיל בתוכו כבר את תיקיית infra-repo)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. עדכון תגיות ה-Image ישירות בתיקייה המקומית
+      # 2. עדכון תגיות ה-Image ישירות בנתיב המקומי הקיים
       - name: Update Image Tags
         run: |
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
@@ -40,7 +39,7 @@ jobs:
               exit 1
           fi
 
-      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה ל-dev בלי אישור ידני
+      # 3. דחיפה אוטומטית (Push) של השינויים בחזרה ל-dev בלי צורך באישור ידני
       - name: Commit & Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -48,7 +47,7 @@ jobs:
           
           git add infra-repo/kubernetes/deployments/*.yaml
           
-          # בדיקה האם בכלל השתנה משהו כדי למנוע שגיאה במידה ואין שינויים
+          # בדיקה האם בוצע שינוי בפועל כדי למנוע שגיאה במידה ואין עדכון
           if git diff --staged --quiet; then
             echo "No changes detected in manifests."
           else
