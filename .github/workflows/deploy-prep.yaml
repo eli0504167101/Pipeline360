@@ -10,39 +10,79 @@ jobs:
   update-manifests:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
-    
+
     steps:
-      - name: Checkout repository
+      - name: Checkout main branch
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Update Image Tags
+        env:
+          IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
+          set -e
+
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
           FRONTEND_YAML="infra-repo/kubernetes/deployments/frontend-deployment.yaml"
 
-          if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
-              echo "Updating image tags to ${{ github.run_number }}..."
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
-          else
-              echo "Error: One or more deployment files not found!"
-              exit 1
+          echo "Updating image tags to ${IMAGE_TAG}..."
+
+          if [ ! -f "$BACKEND_YAML" ]; then
+            echo "Error: Backend deployment file was not found."
+            exit 1
           fi
 
-      - name: Commit & Push Changes
+          if [ ! -f "$FRONTEND_YAML" ]; then
+            echo "Error: Frontend deployment file was not found."
+            exit 1
+          fi
+
+          sed -i \
+            "s|image: ${DOCKERHUB_USERNAME}/hotel-backend:.*|image: ${DOCKERHUB_USERNAME}/hotel-backend:${IMAGE_TAG}|" \
+            "$BACKEND_YAML"
+
+          sed -i \
+            "s|image: ${DOCKERHUB_USERNAME}/hotel-frontend:.*|image: ${DOCKERHUB_USERNAME}/hotel-frontend:${IMAGE_TAG}|" \
+            "$FRONTEND_YAML"
+
+          echo "Backend image:"
+          grep -n "image:" "$BACKEND_YAML"
+
+          echo "Frontend image:"
+          grep -n "image:" "$FRONTEND_YAML"
+
+          if ! grep -q "hotel-backend:${IMAGE_TAG}" "$BACKEND_YAML"; then
+            echo "Error: Backend image tag was not updated."
+            exit 1
+          fi
+
+          if ! grep -q "hotel-frontend:${IMAGE_TAG}" "$FRONTEND_YAML"; then
+            echo "Error: Frontend image tag was not updated."
+            exit 1
+          fi
+
+      - name: Commit and Push Changes
+        env:
+          IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add infra-repo/kubernetes/deployments/*.yaml
-          
-          if git diff --staged --quiet; then
-            echo "No changes detected in manifests."
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            infra-repo/kubernetes/deployments/backend-deployment.yaml \
+            infra-repo/kubernetes/deployments/frontend-deployment.yaml
+
+          if git diff --cached --quiet; then
+            echo "No manifest changes detected."
           else
-            git commit -m "Automated image tag update to ${{ github.run_number }}"
-            # שימוש ב-HEAD פותר את הבעיה ב-100% כי הוא דוחף את הבראנץ' הנוכחי (main) אל deploy-dev
-            git push origin HEAD:deploy-dev --force
+            git commit -m "Update deployment image tags to ${IMAGE_TAG}"
+            git push origin main
           fi
