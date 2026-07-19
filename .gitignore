@@ -1,5 +1,6 @@
 # Secret files - Do not commit!
-infra/kubernetes/secrets/db-secrets.yaml
+infra-repo/kubernetes/secrets/db-secrets.yaml
 node_modules/
 push.sh
 deploy.sh
+frontend-repo/.env
