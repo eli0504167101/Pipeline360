@@ -24,9 +24,9 @@ jobs:
           FRONTEND_YAML="infra-repo/kubernetes/deployments/frontend-deployment.yaml"
 
           if [ -f "$BACKEND_YAML" ] && [ -f "$FRONTEND_YAML" ]; then
-              echo "Updating image tags to ${{ github.run_number }}..."
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}|g" "$BACKEND_YAML"
-              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}|g" "$FRONTEND_YAML"
+              echo "Updating image tags to ${{ github.event.workflow_run.run_number }}..."
+              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.event.workflow_run.run_number }}|g" "$BACKEND_YAML"
+              sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.event.workflow_run.run_number }}|g" "$FRONTEND_YAML"
           else
               echo "Error: One or more deployment files not found!"
               exit 1
@@ -42,7 +42,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes detected in manifests."
           else
-            git commit -m "Automated image tag update to ${{ github.run_number }}"
+            git commit -m "Automated image tag update to ${{ github.event.workflow_run.run_number }}"
             # שימוש ב-HEAD פותר את הבעיה ב-100% כי הוא דוחף את הבראנץ' הנוכחי (main) אל deploy-dev
             git push origin HEAD:deploy-dev --force
           fi
