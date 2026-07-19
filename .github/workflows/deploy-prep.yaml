@@ -15,10 +15,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout deploy-dev branch
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
-          ref: deploy-dev
+          ref: main
           fetch-depth: 0
 
       - name: Update Image Tags
@@ -34,14 +34,12 @@ jobs:
           echo "Updating image tags to ${IMAGE_TAG}..."
 
           if [ ! -f "$BACKEND_YAML" ]; then
-            echo "Error: Backend deployment file not found:"
-            echo "$BACKEND_YAML"
+            echo "Error: Backend deployment file was not found."
             exit 1
           fi
 
           if [ ! -f "$FRONTEND_YAML" ]; then
-            echo "Error: Frontend deployment file not found:"
-            echo "$FRONTEND_YAML"
+            echo "Error: Frontend deployment file was not found."
             exit 1
           fi
 
@@ -53,10 +51,10 @@ jobs:
             "s|image: ${DOCKERHUB_USERNAME}/hotel-frontend:.*|image: ${DOCKERHUB_USERNAME}/hotel-frontend:${IMAGE_TAG}|" \
             "$FRONTEND_YAML"
 
-          echo "Updated backend image:"
+          echo "Backend image:"
           grep -n "image:" "$BACKEND_YAML"
 
-          echo "Updated frontend image:"
+          echo "Frontend image:"
           grep -n "image:" "$FRONTEND_YAML"
 
           if ! grep -q "hotel-backend:${IMAGE_TAG}" "$BACKEND_YAML"; then
@@ -83,8 +81,8 @@ jobs:
             infra-repo/kubernetes/deployments/frontend-deployment.yaml
 
           if git diff --cached --quiet; then
-            echo "No changes detected in manifests."
+            echo "No manifest changes detected."
           else
-            git commit -m "Update deployment images to ${IMAGE_TAG}"
-            git push origin deploy-dev
+            git commit -m "Update deployment image tags to ${IMAGE_TAG}"
+            git push origin main
           fi
