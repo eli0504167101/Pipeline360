@@ -5,3 +5,8 @@ push.sh
 deploy.sh
 frontend-repo/.env
     
+# Local runtime logs
+*.log
+
+# MongoDB local backups
+mongo-backup/
