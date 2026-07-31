@@ -158,7 +158,7 @@ http://hotel.local:3000
 ## Mongo Express
 
 ```text
-http://localhost:8085
+http://localhost:8086
 ```
 
 ---
@@ -312,7 +312,7 @@ kubectl get application pipeline360 -n argocd
 - ✅ Run `./start-pipeline360.sh`
 - ✅ Open:
   - http://hotel.local:3000
-  - http://localhost:8085
+  - http://localhost:8086
   - https://localhost:8081
 
 ---
