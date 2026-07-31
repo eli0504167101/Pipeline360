@@ -13,6 +13,7 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout main branch
@@ -21,25 +22,25 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Update Image Tags
+      - name: Update image tags
         env:
           IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
-          set -e
+          set -euo pipefail
 
           BACKEND_YAML="infra-repo/kubernetes/deployments/backend-deployment.yaml"
           FRONTEND_YAML="infra-repo/kubernetes/deployments/frontend-deployment.yaml"
 
-          echo "Updating image tags to ${IMAGE_TAG}..."
+          echo "Updating deployment image tags to ${IMAGE_TAG}..."
 
           if [ ! -f "$BACKEND_YAML" ]; then
-            echo "Error: Backend deployment file was not found."
+            echo "Error: Backend deployment file was not found: $BACKEND_YAML"
             exit 1
           fi
 
           if [ ! -f "$FRONTEND_YAML" ]; then
-            echo "Error: Frontend deployment file was not found."
+            echo "Error: Frontend deployment file was not found: $FRONTEND_YAML"
             exit 1
           fi
 
@@ -67,11 +68,14 @@ jobs:
             exit 1
           fi
 
-      - name: Commit and Push Changes
+      - name: Create deployment update branch
+        id: deployment-branch
         env:
           IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
         run: |
-          set -e
+          set -euo pipefail
+
+          BRANCH_NAME="deployment/image-tags-${IMAGE_TAG}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -82,7 +86,46 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No manifest changes detected."
-          else
-            git commit -m "Update deployment image tags to ${IMAGE_TAG}"
-            git push origin main
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          git switch -c "$BRANCH_NAME"
+          git commit -m "Update deployment image tags to ${IMAGE_TAG}"
+          git push --set-upstream origin "$BRANCH_NAME"
+
+          echo "changes=true" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request to main
+        if: steps.deployment-branch.outputs.changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_TAG: ${{ github.event.workflow_run.run_number }}
+          BRANCH_NAME: ${{ steps.deployment-branch.outputs.branch_name }}
+        run: |
+          set -euo pipefail
+
+          EXISTING_PR="$(gh pr list \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Pull request #${EXISTING_PR} already exists."
+            exit 0
+          fi
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "Deploy image version ${IMAGE_TAG}" \
+            --body "Automated deployment preparation update.
+
+          - Backend image tag: ${IMAGE_TAG}
+          - Frontend image tag: ${IMAGE_TAG}
+          - Source CI run: ${{ github.event.workflow_run.html_url }}
+
+          This pull request requires review and approval before merging into main."
