@@ -3,7 +3,7 @@
 set -u
 
 PROJECT_NAME="Pipeline360"
-MONGO_LOCAL_PORT="8085"
+MONGO_LOCAL_PORT="8086"
 ARGOCD_LOCAL_PORT="8081"
 
 MONGO_LOG="/tmp/pipeline360-mongo-express.log"
