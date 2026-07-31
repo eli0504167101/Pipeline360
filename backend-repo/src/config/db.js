@@ -1,15 +1,20 @@
 const mongoose = require('mongoose');
 
-// בקובץ config/db.js
 const connectDB = async () => {
-    try {
-        // שים לב לחלק האחרון ב-URL: כאן אתה מגדיר את שם ה-DB
-        // שנה את השורה הזו בקובץ config/db.js
-        await mongoose.connect('mongodb://mongodb:27017/Pipeline360_PROD'); 
-        console.log("Connected to the NEW production database");
-    } catch (err) {
-        console.error(err.message);
+  try {
+    const mongoUrl = process.env.MONGO_URL;
+
+    if (!mongoUrl) {
+      throw new Error('MONGO_URL environment variable is not defined');
     }
+
+    await mongoose.connect(mongoUrl);
+
+    console.log('Connected to MongoDB successfully');
+  } catch (error) {
+    console.error('MongoDB connection failed:', error.message);
+    throw error;
+  }
 };
 
 module.exports = connectDB;
