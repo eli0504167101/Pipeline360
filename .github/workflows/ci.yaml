@@ -37,6 +37,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:latest3
+            ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:latest
 
       
