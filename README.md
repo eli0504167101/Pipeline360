@@ -711,6 +711,6 @@ Potential future enhancements:
 
 ## Author
 
-Developed by **Eli**
+Developed by **Eliychu Hildesheim**
 
 DevOps Final Project — Pipeline360
