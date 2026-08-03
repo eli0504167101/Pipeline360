@@ -10,3 +10,6 @@ frontend-repo/.env
 
 # MongoDB local backups
 mongo-backup/
+
+# Docker Compose local credentials
+.env.compose
