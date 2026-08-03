@@ -634,17 +634,33 @@ The repository contains a Secret template:
 infra-repo/kubernetes/secrets/db-secrets.yaml.template
 ```
 
-Real credentials must not be committed to Git.
+The live Kubernetes Secret is:
 
-Create the live Secret separately in the Kubernetes cluster and verify it with:
-
-```bash
-kubectl get secret mongo-secrets -n hotel-system
+```text
+mongo-express-auth
 ```
 
-Do not print or commit decoded secret values.
+It contains:
 
----
+```text
+username
+password
+```
+
+These credentials protect the Mongo Express web interface using Basic
+Authentication.
+
+MongoDB internal authentication is not enabled in the current local Kind
+environment. The Backend connects to MongoDB using `MONGO_URL` from the
+`app-config` ConfigMap.
+
+Real credentials must not be committed to Git.
+
+Verify the Secret without displaying its values:
+
+```bash
+kubectl get secret mongo-express-auth -n hotel-system
+```
 
 ## Architecture Diagram
 
@@ -711,6 +727,6 @@ Potential future enhancements:
 
 ## Author
 
-Developed by **Eli**
+Developed by **Eliychu Hildesheim**
 
 DevOps Final Project — Pipeline360
