@@ -1,42 +1,63 @@
 services:
   backend:
-    build: ./backend-repo
-    ports:
-      - "3000:3000"
+    build:
+      context: ./backend-repo
+      dockerfile: Dockerfile
     environment:
-      - DB_NAME=Pipeline360_PROD
+      MONGO_URL: mongodb://mongodb:27017/Pipeline360_PROD
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     volumes:
       - ./backend-repo:/app
       - /app/node_modules
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend-repo
+    build:
+      context: ./frontend-repo
+      dockerfile: Dockerfile
+    environment:
+      BACKEND_URL: backend:3000
+    depends_on:
+      backend:
+        condition: service_started
     ports:
       - "9000:80"
-    depends_on:
-      - backend
+    restart: unless-stopped
 
   mongodb:
-    image: mongo:latest
+    image: mongo:8.2.11
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - db.adminCommand('ping')
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
 
   mongo-express:
-    image: mongo-express
-    restart: always
+    image: mongo-express:1.0.2
+    depends_on:
+      mongodb:
+        condition: service_healthy
     ports:
       - "8085:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_BASICAUTH_USERNAME: "admin"
-      ME_CONFIG_BASICAUTH_PASSWORD: "password123"
-    depends_on:
-      - mongodb
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME:?MONGO_EXPRESS_USERNAME is required}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:?MONGO_EXPRESS_PASSWORD is required}
+    restart: unless-stopped
 
 volumes:
   mongo-data:
