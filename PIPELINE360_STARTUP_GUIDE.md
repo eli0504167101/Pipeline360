@@ -156,6 +156,14 @@ http://hotel.local:3000
 
 ## Mongo Express
 
+Primary access through NGINX Ingress:
+
+```text
+http://mongo.hotel.local:3000
+```
+
+Alternative access through the startup script port-forward:
+
 ```text
 http://localhost:8086
 ```
@@ -167,7 +175,6 @@ http://localhost:8086
 ```text
 https://localhost:8081
 ```
-
 Accept the browser security warning the first time.
 
 ---
@@ -183,7 +190,7 @@ ps -ef | grep '[k]ubectl port-forward'
 # 10. Check Listening Ports
 
 ```bash
-ss -ltn | grep -E ':8081|:8085'
+ss -ltn | grep -E ':8081|:8086|:3000'
 ```
 
 ---
@@ -310,10 +317,10 @@ kubectl get applications -n argocd \ -o custom-columns='NAME:.metadata.name,SYNC
 - ✅ ArgoCD is Synced and Healthy
 - ✅ Run `./start-pipeline360.sh`
 - ✅ Open:
-  - http://hotel.local:3000
-  - http://localhost:8086
-  - https://localhost:8081
-
+  - Hotel Application: http://hotel.local:3000
+  - Mongo Express via Ingress: http://mongo.hotel.local:3000
+  - Mongo Express via port-forward: http://localhost:8086
+  - Argo CD: https://localhost:8081
 ---
 
 # Project Structure
