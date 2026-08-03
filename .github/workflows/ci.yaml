@@ -2,11 +2,90 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ dev ] 
+    branches:
+      - dev
+
+permissions:
+  contents: read
 
 jobs:
-  build-and-push:
+  validate:
+    name: Validate source and configuration
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: backend-repo/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend-repo
+        run: npm ci --omit=dev
+
+      - name: Validate backend JavaScript
+        working-directory: backend-repo
+        run: npm test
+
+      - name: Validate frontend JavaScript
+        working-directory: frontend-repo
+        run: npm test
+
+      - name: Validate Docker Compose configuration
+        env:
+          MONGO_EXPRESS_USERNAME: ci-validation-user
+          MONGO_EXPRESS_PASSWORD: ci-validation-password
+        run: docker compose config --quiet
+
+      - name: Validate Docker build contexts
+        run: |
+          set -euo pipefail
+
+          test -f backend-repo/Dockerfile
+          test -f backend-repo/.dockerignore
+          test -f frontend-repo/Dockerfile
+          test -f frontend-repo/.dockerignore
+
+          echo "Docker build files are present."
+
+      - name: Validate required Kubernetes manifests
+        run: |
+          set -euo pipefail
+
+          required_files=(
+            "infra-repo/kubernetes/backend/deployment.yaml"
+            "infra-repo/kubernetes/backend/service.yaml"
+            "infra-repo/kubernetes/frontend/deployment.yaml"
+            "infra-repo/kubernetes/frontend/service.yaml"
+            "infra-repo/kubernetes/platform/namespace.yaml"
+            "infra-repo/kubernetes/platform/app-config.yaml"
+            "infra-repo/kubernetes/platform/mongo-statefulset.yaml"
+            "infra-repo/kubernetes/platform/mongo-service.yaml"
+            "infra-repo/kubernetes/platform/mongo-headless-service.yaml"
+            "infra-repo/kubernetes/platform/mongo-express.yaml"
+            "infra-repo/kubernetes/platform/hotel-ingress.yaml"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Required manifest is missing: $file"
+              exit 1
+            fi
+
+            echo "Found: $file"
+          done
+
+  build-and-push:
+    name: Build and push container images
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -14,23 +93,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DockerHub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      
-      - name: Build and push Frontend Image
+      - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend-repo # וודא שהנתיב נכון
+          context: ./frontend-repo
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:${{ github.run_number }}
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Build and push Backend Image
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend-repo
@@ -38,5 +118,5 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:${{ github.run_number }}
             ${{ secrets.DOCKERHUB_USERNAME }}/hotel-backend:latest
-
-      
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
