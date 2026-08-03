@@ -296,7 +296,7 @@ kubectl get ingress -n hotel-system
 ## Verify ArgoCD
 
 ```bash
-kubectl get application pipeline360 -n argocd
+kubectl get applications -n argocd \ -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
 ```
 
 ---
