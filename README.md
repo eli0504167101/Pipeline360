@@ -648,6 +648,12 @@ Do not print or commit decoded secret values.
 
 ## Architecture Diagram
 
+The following diagram illustrates the complete GitOps workflow and deployment architecture of the Pipeline360 platform.
+
+<p align="center">
+  <img src="docs/architecture.png" alt="Pipeline360 Architecture" width="1000">
+</p>
+
 <!--
 After exporting the final diagram, add:
 
