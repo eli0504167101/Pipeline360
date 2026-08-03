@@ -110,9 +110,8 @@ mongo-express-xxxxx           1/1 Running
 # 6. Verify ArgoCD
 
 ```bash
-kubectl get application pipeline360 \
--n argocd \
--o custom-columns='SYNC:.status.sync.status,HEALTH:.status.health.status'
+kubectl get applications -n argocd \
+-o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
 ```
 
 Expected:
