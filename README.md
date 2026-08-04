@@ -707,6 +707,17 @@ The architecture diagram presents:
 
 ---
 
+## Network Security
+
+The current local Kind cluster uses an older Kindnet networking implementation.
+NetworkPolicy manifests are therefore not used as an enforced security control.
+
+A production deployment should use a NetworkPolicy-capable CNI and enforce
+least-privilege communication between the ingress controller, frontend,
+backend, Mongo Express, MongoDB, and CoreDNS.
+
+---
+
 ## Future Improvements
 
 Potential future enhancements:
